@@ -4,7 +4,7 @@ use strict;
 
 my $sum = 0;
 
-# Main loop. Remove text characters and process first/last integer.
+# Main loop. Break data down into component parts and calculate product.
 while (<>) {
   my $row = $_;
   chomp $row;

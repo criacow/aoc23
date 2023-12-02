@@ -4,7 +4,7 @@ use strict;
 
 my $sum = 0;
 
-# Main loop. Remove text characters and process first/last integer.
+# Main loop. Break data down into component parts, run tests, generate sum.
 while (<>) {
   my $row = $_;
   chomp $row;
@@ -22,8 +22,6 @@ while (<>) {
     my ($header, $gamenum) = split(/ /, $game);
     $sum += $gamenum;
   }
-#  my $value = sprintf("%d%d", substr($row, 0, 1), substr($row, -1, 1));
-#  $calibration += $value;
 }
 
 # A tiny bit of error handling.

@@ -1,0 +1,61 @@
+--- implementation-base.py	2022-10-18 17:33:33.000000000 +0000
++++ implementation1.py	2023-12-25 18:43:53.092085005 +0000
+@@ -91,9 +91,22 @@
+     def passable(self, id: GridLocation) -> bool:
+         return id not in self.walls
+     
+-    def neighbors(self, id: GridLocation) -> Iterator[GridLocation]:
++    def neighbors(self, id: GridLocation, slopes) -> Iterator[GridLocation]:
+         (x, y) = id
+-        neighbors = [(x+1, y), (x-1, y), (x, y-1), (x, y+1)] # E W N S
++        slope = ""
++        if id in slopes.keys():
++          slope = slopes[id]
++          print(slope)
++        if slope == ">":
++          neighbors = [(x+1, y)]
++        elif slope == "v":
++          neighbors = [(x, y+1)]
++        elif slope == "<":
++          neighbors = [(x-1, y)]
++        elif slope == "^":
++          neighbors = [(x, y-1)]
++        else:
++          neighbors = [(x+1, y), (x-1, y), (x, y-1), (x, y+1)] # E W N S
+         # see "Ugly paths" section for an explanation:
+         if (x + y) % 2 == 0: neighbors.reverse() # S N W E
+         results = filter(self.in_bounds, neighbors)
+@@ -109,7 +122,7 @@
+         self.weights: dict[GridLocation, float] = {}
+     
+     def cost(self, from_node: GridLocation, to_node: GridLocation) -> float:
+-        return self.weights.get(to_node, 1)
++        return self.weights.get(to_node, -1)
+ 
+ diagram4 = GridWithWeights(10, 10)
+ diagram4.walls = [(1, 7), (1, 8), (2, 7), (2, 8), (3, 7), (3, 8)]
+@@ -185,7 +198,7 @@
+     (x2, y2) = b
+     return abs(x1 - x2) + abs(y1 - y2)
+ 
+-def a_star_search(graph: WeightedGraph, start: Location, goal: Location):
++def a_star_search(graph: WeightedGraph, start: Location, goal: Location, slopes):
+     frontier = PriorityQueue()
+     frontier.put(start, 0)
+     came_from: dict[Location, Optional[Location]] = {}
+@@ -196,10 +209,11 @@
+     while not frontier.empty():
+         current: Location = frontier.get()
+         
+-        if current == goal:
+-            break
+-        
+-        for next in graph.neighbors(current):
++#        if current == goal:
++#            break
++        print(current)
++        for next in graph.neighbors(current, slopes):
++          if came_from[current] != next:
+             new_cost = cost_so_far[current] + graph.cost(current, next)
+             if next not in cost_so_far or new_cost < cost_so_far[next]:
+                 cost_so_far[next] = new_cost

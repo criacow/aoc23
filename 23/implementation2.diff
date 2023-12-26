@@ -1,0 +1,101 @@
+--- implementation-base.py	2022-10-18 17:33:33.000000000 +0000
++++ implementation.py	2023-12-26 04:06:02.713357030 +0000
+@@ -85,14 +85,17 @@
+         self.walls: list[GridLocation] = []
+     
+     def in_bounds(self, id: GridLocation) -> bool:
++#        (x, y) = id[0:2]
+         (x, y) = id
+         return 0 <= x < self.width and 0 <= y < self.height
+     
+     def passable(self, id: GridLocation) -> bool:
+         return id not in self.walls
+     
+-    def neighbors(self, id: GridLocation) -> Iterator[GridLocation]:
++    def neighbors(self, id: GridLocation):
++#        (x, y) = id[0:2]
+         (x, y) = id
++#        neighbors = [(x+1, y, "E"), (x-1, y, "W"), (x, y-1, "N"), (x, y+1, "S")] # E W N S
+         neighbors = [(x+1, y), (x-1, y), (x, y-1), (x, y+1)] # E W N S
+         # see "Ugly paths" section for an explanation:
+         if (x + y) % 2 == 0: neighbors.reverse() # S N W E
+@@ -109,7 +112,7 @@
+         self.weights: dict[GridLocation, float] = {}
+     
+     def cost(self, from_node: GridLocation, to_node: GridLocation) -> float:
+-        return self.weights.get(to_node, 1)
++        return self.weights.get(to_node, -1)
+ 
+ diagram4 = GridWithWeights(10, 10)
+ diagram4.walls = [(1, 7), (1, 8), (2, 7), (2, 8), (3, 7), (3, 8)]
+@@ -185,6 +188,38 @@
+     (x2, y2) = b
+     return abs(x1 - x2) + abs(y1 - y2)
+ 
++def check_visited(came_from, start, current, search):
++#    current: Location = goal
++    path: list[Location] = []
++    if current not in came_from: # no path was found
++        return 0
++    while current != start:
++        path.append(current)
++        current = came_from[current]
++    path.append(start) # optional
++    path.reverse() # optional
++    if search in path:
++      return 1
++    else:
++      return 0
++
++def check_came_from(came_from, current, search):
++  print(came_from[current])
++  print(search)
++  if current == None:
++    return 0
++  elif came_from[current] == None:
++    return 0
++  elif came_from[current] == search:
++    if search == (13,17):
++      print("current: " + str(current))
++      print("cf: " + str(came_from[current]))
++    return 1
++  if search == (13,17):
++    print(current)
++    print(came_from[current])
++  return check_came_from(came_from, came_from[current], search)
++
+ def a_star_search(graph: WeightedGraph, start: Location, goal: Location):
+     frontier = PriorityQueue()
+     frontier.put(start, 0)
+@@ -196,17 +231,27 @@
+     while not frontier.empty():
+         current: Location = frontier.get()
+         
+-        if current == goal:
+-            break
++#        if current == goal:
++#            break
+         
+         for next in graph.neighbors(current):
++#         print("next: " + str(next) + " ; current: " + str(current))
++#         xr = check_came_from(came_from, current, next)
++#         print(str(current) + " -> " + str(next) + " (" + str(xr) + ")")
++#          print(xr)
++#         if xr == 0:
++#            new_cost = cost_so_far[current] + graph.cost(current, next[0:2])
++          xr = check_visited(came_from, start, current, next)
++          if xr == 0:
++#           if came_from[current] != next:
+             new_cost = cost_so_far[current] + graph.cost(current, next)
+             if next not in cost_so_far or new_cost < cost_so_far[next]:
+                 cost_so_far[next] = new_cost
+-                priority = new_cost + heuristic(next, goal)
++#                priority = new_cost + heuristic(next[0:2], goal)
++                priority = new_cost
+                 frontier.put(next, priority)
+                 came_from[next] = current
+-    
++
+     return came_from, cost_so_far
+ 
+ def breadth_first_search(graph: Graph, start: Location, goal: Location):
